@@ -1,0 +1,21 @@
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WebChatApp.Models
+{
+    public class User
+    {
+        public int UserID { get; set; }
+        [Required]
+        public string Name { get; set; }
+        public string? LastName { get; set; }
+        [Required]
+        [PasswordPropertyText]
+        public string Password { get; set; }
+
+        //[InverseProperty("UserID")]
+        public ICollection<Chat> Chats { get; set; }
+
+    }
+}
