@@ -14,7 +14,6 @@ namespace WebChatApp.Models
         [PasswordPropertyText]
         public string Password { get; set; }
 
-        //[InverseProperty("UserID")]
         public ICollection<Chat> Chats { get; set; }
 
     }
