@@ -13,7 +13,8 @@ namespace WebChatApp.Models
         [Required]
         [PasswordPropertyText]
         public string Password { get; set; }
-        public ICollection<Chat> Chats { get; set; }
+        public ICollection<Chat> Chats { get; set; }  
+
     }
 
     public class UserCreate
