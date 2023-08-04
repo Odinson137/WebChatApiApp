@@ -6,8 +6,12 @@ namespace WebChatApp.Models
     {
         public int ChatID { get; set; }
         public string Title { get; set; }
-
         public ICollection<User> Users { get; set; }
         public ICollection<Message> Messages { get; set; }
+    }
+
+    public class CreateChat
+    {
+        public string Title { get; set; }
     }
 }

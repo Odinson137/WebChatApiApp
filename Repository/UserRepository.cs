@@ -14,13 +14,19 @@ namespace WebChatApp.Repository
             _context = context;
         }
 
-        public ICollection<User> GetUsers()
+        public ICollection<UserCreate> GetUsers()
         {
-            ICollection<User> users = _context.Users.ToList();
+            ICollection<UserCreate> users = _context.Users.Select(x => new UserCreate()
+            {
+                UserID = x.UserID,
+                Name = x.Name,
+                LastName = x.LastName,
+                Password = x.Password
+            }).ToList();
             return users;
         }
 
-        public void NewUser(User user)
+        public void CreateUser(User user)
         {
             _context.Users.Add(user);
             _context.SaveChanges();

@@ -15,13 +15,13 @@ namespace WebChatApp.Controllers
             _userRepository = userRepository;
         }
 
-
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<User>))]
         [ProducesResponseType(400)]
         public IActionResult GetUsers()
         {
-            var users = _userRepository.GetUsers();
+            ICollection<UserCreate> users = _userRepository.GetUsers();
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             return Ok(users);
@@ -33,23 +33,44 @@ namespace WebChatApp.Controllers
         public IActionResult GetUser(int userID)
         {
             User user = _userRepository.GetUser(userID);
+
             if (user == null) return BadRequest(ModelState);
-            return Ok(user);
+
+            UserCreate userCreate = new UserCreate()
+            {
+                Name = user.Name,
+                LastName = user.LastName,
+                Password = user.Password,
+            };
+
+            return Ok(userCreate);
         }
 
         [HttpPost]
-        public IActionResult NewUser()
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateUser([FromBody] UserCreate user)
         {
+            if (user == null)
+                return BadRequest(ModelState);
+
+            var userBD = _userRepository.GetUser(user.Name);
+
+            if (userBD != null)
+            {
+                ModelState.AddModelError("", "Такой пользователь уже существует");
+                return StatusCode(422, ModelState);
+            }
             User user1 = new User()
             {
-                Name = "Sasha",
-                LastName = "Baget",
-                Password = "246532w4643@!"
+                Name = user.Name,
+                LastName = user.LastName,
+                Password = user.Password
             };
 
-            _userRepository.NewUser(user1);
+            _userRepository.CreateUser(user1);
          
-            return Ok(user1);
+            return Ok("Siccecfully created");
         }
     }
 }
