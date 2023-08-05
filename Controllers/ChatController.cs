@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using WebChatApp.Data;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
 
 namespace WebChatApp.Controllers
 {
     [Route("api/[controller]")]
-    public class ChatController : Controller
+    public class ChatController : Controller 
     {
 
         private readonly IChatRepository _chatRepository;

@@ -1,15 +1,32 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebChatApp.Interfaces;
+using Microsoft.AspNetCore.SignalR;
+using WebChatApp.Data.Hubs;
 
 namespace WebChatApp.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class MessageController : Controller
     {
-        private readonly IMessageRepository _messageRepository;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public MessageController(IMessageRepository userRepository)
+        public MessageController(IHubContext<ChatHub> hubContext)
         {
-            _messageRepository = userRepository;
+            _hubContext = hubContext;
+        }
+
+        [HttpGet]
+        public IActionResult GetMessages()
+        {
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendMessage([FromBody] string message)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
+            Console.WriteLine(message);
+            return Ok();
         }
     }
 }
