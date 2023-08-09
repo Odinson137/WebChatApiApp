@@ -12,6 +12,7 @@ namespace WebChatApp.Models
 
     public class CreateChat
     {
+        public int ChatID { get; set; }
         public string Title { get; set; }
     }
 }
