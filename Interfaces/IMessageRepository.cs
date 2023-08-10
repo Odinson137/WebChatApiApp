@@ -4,10 +4,8 @@ namespace WebChatApp.Interfaces
 {
     public interface IMessageRepository
     {
-        ICollection<Message> GetMessages();
-        Message GetMessage(int id);
-        bool DeleteMessage(int id);
-        ICollection<Message> GetMessages(string userID);
-        bool CreateMessage(User user);
+        ICollection<Message> GetChatMessages(int chatId);
+
+        void AddNewMessage(Message message);
     }
 }

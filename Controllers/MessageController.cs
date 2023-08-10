@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using WebChatApp.Data;
 using WebChatApp.Data.Hubs;
+using WebChatApp.Interfaces;
+using WebChatApp.Models;
 
 namespace WebChatApp.Controllers
 {
@@ -9,24 +12,43 @@ namespace WebChatApp.Controllers
     public class MessageController : Controller
     {
         private readonly IHubContext<ChatHub> _hubContext;
-
-        public MessageController(IHubContext<ChatHub> hubContext)
+        private readonly IMessageRepository _messageRepository;
+        private readonly UserManager _userManager;
+        public MessageController(IHubContext<ChatHub> hubContext, IMessageRepository messageRepository, UserManager userManager)
         {
             _hubContext = hubContext;
+            _messageRepository = messageRepository;
+            _userManager = userManager;
         }
 
-        [HttpGet]
-        public IActionResult GetMessages()
+        [HttpGet("{chatId}")]
+        [ProducesResponseType(200, Type = typeof(Message))]
+        public IActionResult GetUser([FromRoute] int chatId)
         {
-            return Ok();
+            ICollection<Message> messages = _messageRepository.GetChatMessages(chatId);
+            if (messages == null) return BadRequest(ModelState);
+
+            return Ok(messages);
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendMessage([FromBody] string message)
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult GetUser([FromBody] Message message)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
-            Console.WriteLine(message);
-            return Ok();
+            _messageRepository.AddNewMessage(message);
+
+            _hubContext.Clients.All.SendAsync("OnReceiveMessage", message.UserID, message.ChatID, message.Text);
+
+            return Ok("Сообщение успешно создано");
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> SendMessage([FromBody] string message)
+        //{
+        //    await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
+        //    Console.WriteLine(message);
+        //    return Ok();
+        //}
     }
 }
