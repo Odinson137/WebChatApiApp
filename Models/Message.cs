@@ -12,6 +12,6 @@ namespace WebChatApp.Models
         public int UserID { get; set; }
         public DateTime SendTime { get; set; }
         public string Text { get; set; }
-        public Chat Сhat { get; set; }
+        //public Chat Сhat { get; set; }
     }
 }

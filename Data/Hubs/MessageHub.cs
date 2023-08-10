@@ -4,16 +4,16 @@ namespace WebChatApp.Data.Hubs
 {
     public class ChatHub : Hub
     {
-        Dictionary<int, string> userDict = new Dictionary<int, string>();
-        public async Task Send(string message)
-        {
-            Console.WriteLine(message);
-            //await this.Clients.All.SendAsync("Receive", username, message);
-            string userId = Context.ConnectionId;
-            Console.WriteLine(userId);
+        //Dictionary<int, string> usersDict = new Dictionary<int, string>();
+        //public async Task Send(int userId)
+        //{
+            
+        //    //await this.Clients.All.SendAsync("Receive", username, message);
+        //    string userConnectionId = Context.ConnectionId;
+        //    Console.WriteLine(userId);
 
-            // Передаем идентификатор клиенту
-            await Clients.Caller.SendAsync("ReceiveUserId", userId);
-        }
+        //    // Передаем идентификатор клиенту
+        //    await Clients.Caller.SendAsync("ReceiveUserId", "Ok");
+        //}
     }
 }
