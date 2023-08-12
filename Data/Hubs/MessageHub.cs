@@ -1,19 +1,34 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace WebChatApp.Data.Hubs
 {
     public class ChatHub : Hub
     {
-        //Dictionary<int, string> usersDict = new Dictionary<int, string>();
-        //public async Task Send(int userId)
-        //{
-            
-        //    //await this.Clients.All.SendAsync("Receive", username, message);
-        //    string userConnectionId = Context.ConnectionId;
-        //    Console.WriteLine(userId);
+        private UserManager _userManager;
 
-        //    // Передаем идентификатор клиенту
-        //    await Clients.Caller.SendAsync("ReceiveUserId", "Ok");
-        //}
+        public ChatHub(UserManager userManager)
+        {
+            _userManager = userManager;
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            
+            Console.WriteLine("Подключился новый пользователь!");
+        }
+
+        public void SendMessage(int userId)
+        {
+            try
+            {
+                string userConnectionId = Context.ConnectionId;
+                Console.WriteLine(userId + " " + userConnectionId);
+                _userManager.AddUserId(userId, userConnectionId);
+            } catch (Exception ex)
+            {
+                Console.WriteLine("Ошибка: " + ex.Message);
+            }
+        }
     }
 }

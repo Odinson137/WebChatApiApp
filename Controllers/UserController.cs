@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebChatApp.Data;
+using WebChatApp.DTO;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
 
@@ -16,11 +18,11 @@ namespace WebChatApp.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<User>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<UserDTO>))]
         [ProducesResponseType(400)]
         public IActionResult GetUsers()
         {
-            ICollection<UserCreate> users = _userRepository.GetUsers();
+            ICollection<UserDTO> users = _userRepository.GetUsers();
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -29,18 +31,17 @@ namespace WebChatApp.Controllers
 
 
         [HttpGet("{userID}")]
-        [ProducesResponseType(200, Type = typeof(User))]
+        [ProducesResponseType(200, Type = typeof(UserDTO))]
         public IActionResult GetUser(int userID)
         {
             User user = _userRepository.GetUser(userID);
 
             if (user == null) return BadRequest(ModelState);
 
-            UserCreate userCreate = new UserCreate()
+            UserDTO userCreate = new UserDTO()
             {
                 Name = user.Name,
-                LastName = user.LastName,
-                Password = user.Password,
+                LastName = user.LastName
             };
 
             return Ok(userCreate);
@@ -70,7 +71,7 @@ namespace WebChatApp.Controllers
 
             _userRepository.CreateUser(user1);
          
-            return Ok("Siccecfully created");
+            return Ok("Succecfully created");
         }
     }
 }

@@ -14,6 +14,7 @@ namespace WebChatApp.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IMessageRepository _messageRepository;
         private readonly UserManager _userManager;
+
         public MessageController(IHubContext<ChatHub> hubContext, IMessageRepository messageRepository, UserManager userManager)
         {
             _hubContext = hubContext;
@@ -36,9 +37,17 @@ namespace WebChatApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetUser([FromBody] Message message)
         {
-            _messageRepository.AddNewMessage(message);
+            //_messageRepository.AddNewMessage(message);
 
-            _hubContext.Clients.All.SendAsync("OnReceiveMessage", message.UserID, message.ChatID, message.Text);
+            // потом отправить эти данные прямикос из клиента, где эта инфа содержится
+            ICollection<int> usersId = _messageRepository.GetIdChatUsers(message.ChatID);
+            //_hubContext.Clients.All.SendAsync("OnReceiveMessage", message.UserID, message.ChatID, message.Text);
+            foreach (int userId in usersId)
+            {
+                if (message.UserID != userId && _userManager.FindUserId(userId))
+                    _hubContext.Clients.Client(_userManager.GetConnectionId(userId))
+                        .SendAsync("OnReceiveMessage", message.UserID, message.ChatID, message.Text);
+            }
 
             return Ok("Сообщение успешно создано");
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using WebChatApp.Data;
+using WebChatApp.DTO;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
 
@@ -14,14 +15,13 @@ namespace WebChatApp.Repository
             _context = context;
         }
 
-        public ICollection<UserCreate> GetUsers()
+        public ICollection<UserDTO> GetUsers()
         {
-            ICollection<UserCreate> users = _context.Users.Select(x => new UserCreate()
+            ICollection<UserDTO> users = _context.Users.Select(x => new UserDTO()
             {
                 UserID = x.UserID,
                 Name = x.Name,
                 LastName = x.LastName,
-                Password = x.Password
             }).ToList();
             return users;
         }

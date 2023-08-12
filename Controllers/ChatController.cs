@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using WebChatApp.Data;
+using WebChatApp.DTO;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
 
@@ -31,10 +32,23 @@ namespace WebChatApp.Controllers
             return Ok(chats);
         }
 
+        [HttpGet("{userId}")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Chat>))]
+        [ProducesResponseType(400)]
+        public IActionResult GetUserChats(int userId)
+        {
+            ICollection<ChatDTO> chats = _chatRepository.GetUserChats(userId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(chats);
+        }
+
         [HttpPost("{userID}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateChat(int userID, [FromBody] CreateChat createChat)
+        public IActionResult CreateChat(int userID, [FromBody] ChatDTO createChat)
         {
             if (_chatRepository.CreateNewChat(userID, createChat))
             {

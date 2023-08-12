@@ -26,7 +26,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<UserManager>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
-builder.Services.AddScoped<IChatUserRepository, ChatUserRepository>();
+//builder.Services.AddScoped<IChatUserRepository, ChatUserRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
