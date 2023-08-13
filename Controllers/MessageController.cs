@@ -24,7 +24,7 @@ namespace WebChatApp.Controllers
 
         [HttpGet("{chatId}")]
         [ProducesResponseType(200, Type = typeof(Message))]
-        public IActionResult GetUser([FromRoute] int chatId)
+        public IActionResult GetUserMessages([FromRoute] int chatId)
         {
             ICollection<Message> messages = _messageRepository.GetChatMessages(chatId);
             if (messages == null) return BadRequest(ModelState);
@@ -37,11 +37,11 @@ namespace WebChatApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetUser([FromBody] Message message)
         {
-            //_messageRepository.AddNewMessage(message);
+            message.SendTime = DateTime.Now;
+            _messageRepository.AddNewMessage(message);
 
             // потом отправить эти данные прямикос из клиента, где эта инфа содержится
             ICollection<int> usersId = _messageRepository.GetIdChatUsers(message.ChatID);
-            //_hubContext.Clients.All.SendAsync("OnReceiveMessage", message.UserID, message.ChatID, message.Text);
             foreach (int userId in usersId)
             {
                 if (message.UserID != userId && _userManager.FindUserId(userId))
