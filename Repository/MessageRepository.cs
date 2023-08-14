@@ -22,9 +22,11 @@ namespace WebChatApp.Repository
 
         public ICollection<Message> GetChatMessages(int chatId)
         {
-            ICollection<Message> messages = _context.Chats.Include(x => x.Messages)
+            ICollection<Message> messages = _context.Chats
+                                            .Include(x => x.Messages)
                                             .Where(chat => chat.ChatID == chatId)
-                                            .SingleOrDefault()?.Messages.ToList() ?? new List<Message>();
+                                            .SingleOrDefault()?
+                                            .Messages.ToList() ?? new List<Message>();
             return messages;
         }
 
@@ -32,7 +34,8 @@ namespace WebChatApp.Repository
         {
             ICollection<int> chatUsers = _context.Chats
                                             .Include(u => u.Users)
-                                            .Where(chat => chat.ChatID == chatId).SingleOrDefault()?
+                                            .Where(chat => chat.ChatID == chatId)
+                                            .SingleOrDefault()?
                                             .Users
                                             .Select(user => user.UserID)
                                             .ToList() ?? new List<int>();

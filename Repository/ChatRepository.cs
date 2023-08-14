@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
-using System.Text.Json;
+﻿using Microsoft.EntityFrameworkCore;
 using WebChatApp.Data;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
@@ -27,7 +24,12 @@ namespace WebChatApp.Repository
 
         public bool CreateNewChat(int userID, ChatDTO createChat)
         {
-            User user = _context.Users.Find(userID);
+            User? user = _context.Users.Find(userID);
+            if (user == null)
+            {
+                Console.WriteLine("Пользователь с таким id не найден");
+                return false;
+            }
             Chat chat = new Chat()
             {
                 Title = createChat.Title,

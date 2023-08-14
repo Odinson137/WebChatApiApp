@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using WebChatApp.Data;
 using WebChatApp.DTO;
 using WebChatApp.Interfaces;
@@ -23,6 +24,7 @@ namespace WebChatApp.Repository
                 Name = x.Name,
                 LastName = x.LastName,
             }).ToList();
+
             return users;
         }
 
@@ -34,6 +36,9 @@ namespace WebChatApp.Repository
 
         public User GetUser(int id)
         {
+
+            int count = _context.ChangeTracker.Entries().Count();
+            Console.WriteLine($"{count}");
             return _context.Users.Where(u => u.UserID == id).FirstOrDefault();
         }
 

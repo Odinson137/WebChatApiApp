@@ -12,7 +12,7 @@ namespace WebChatApp.Data
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
-            
+            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
     }
 }
