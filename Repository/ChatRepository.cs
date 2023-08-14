@@ -22,7 +22,7 @@ namespace WebChatApp.Repository
             return chats;
         }
 
-        public bool CreateNewChat(int userID, ChatDTO createChat)
+        public bool CreateNewChat(string title, int userID)
         {
             User? user = _context.Users.Find(userID);
             if (user == null)
@@ -30,9 +30,12 @@ namespace WebChatApp.Repository
                 Console.WriteLine("Пользователь с таким id не найден");
                 return false;
             }
+            
+            _context.Entry(user).State = EntityState.Unchanged;
             Chat chat = new Chat()
             {
-                Title = createChat.Title,
+                ChatID = 0,
+                Title = title,
                 Users = new List<User>() { user },
             };
             _context.Chats.Add(chat);

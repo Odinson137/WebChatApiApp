@@ -45,12 +45,12 @@ namespace WebChatApp.Controllers
             return Ok(chats);
         }
 
-        [HttpPost("{userID}")]
+        [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateChat(int userID, [FromBody] ChatDTO createChat)
+        public IActionResult CreateChat(string title, int userID)
         {
-            if (_chatRepository.CreateNewChat(userID, createChat))
+            if (_chatRepository.CreateNewChat(title, userID))
             {
                 return Ok("Чат успешно создан");
             }

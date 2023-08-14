@@ -5,7 +5,7 @@ namespace WebChatApp.Interfaces
 {
     public interface IChatRepository
     {
-        bool CreateNewChat(int UserID, ChatDTO createChat);
+        bool CreateNewChat(string title, int UserID);
         ICollection<Chat> GetChats();
         ICollection<ChatDTO> GetUserChats(int userId);
     }
