@@ -50,13 +50,61 @@ namespace WebChatApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateChat(string title, int userID)
         {
-            if (_chatRepository.CreateNewChat(title, userID))
+            User user = _chatRepository.GetUser(userID);
+            if (user == null)
+            {
+                return BadRequest("Пользователь с таким id не найден");
+            }
+            _chatRepository.UpdateState(user);
+
+            Chat chat = new Chat()
+            {
+                ChatID = 0,
+                Title = title,
+                Users = new List<User>() { user },
+            };
+
+            _chatRepository.CreateNewChat(chat);
+
+            if (_chatRepository.Save())
             {
                 return Ok("Чат успешно создан");
             }
             else
             {
                 return BadRequest("Не получилось - не фартануло");
+            }
+        }
+
+        [HttpPut]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult UpdateTitleChat(int chatId, string title)
+        {
+            Chat chat = _chatRepository.GetChat(chatId);
+            chat.Title = title;
+
+            if (_chatRepository.Save())
+            {
+                return Ok("Название успешно изменено");
+            } else
+            {
+                return BadRequest("Название не получилось поменять");
+            }
+        }
+
+        [HttpDelete("{chatId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult DeleteChat(int chatId)
+        {
+            if (_chatRepository.DeleteChat(chatId) == 1)
+            {
+                return Ok("Чат успешно удалён");
+            }
+            else
+            {
+                return BadRequest("Чат не удалён");
             }
         }
     }

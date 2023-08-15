@@ -16,31 +16,47 @@ namespace WebChatApp.Repository
             _context = context;
         }
 
+        public Chat GetChat(int chatId)
+        {
+            var chat = _context.Chats.Find(chatId);
+            _context.Entry(chat).State = EntityState.Unchanged;
+            return chat;
+        }
+
         public ICollection<Chat> GetChats()
         {
             var chats = _context.Chats.ToList();
             return chats;
         }
 
-        public bool CreateNewChat(string title, int userID)
+        public User GetUser(int userID)
         {
-            User? user = _context.Users.Find(userID);
-            if (user == null)
-            {
-                Console.WriteLine("Пользователь с таким id не найден");
-                return false;
-            }
-            
+            return _context.Users.Find(userID);
+        }
+
+        public void UpdateState(User user)
+        {
             _context.Entry(user).State = EntityState.Unchanged;
-            Chat chat = new Chat()
-            {
-                ChatID = 0,
-                Title = title,
-                Users = new List<User>() { user },
-            };
+        }
+
+        public bool CreateNewChat(Chat chat)
+        {
             _context.Chats.Add(chat);
-            _context.SaveChanges();
             return true;
+        }
+
+        public int DeleteChat(int chatId)
+        {
+            return _context.Chats.Where(chat => chat.ChatID == chatId).ExecuteDelete();
+        }
+
+        public bool Save()
+        {
+            if (_context.SaveChanges() != 0)
+            {
+                return true;
+            }
+            return false;
         }
 
         public ICollection<ChatDTO> GetUserChats(int userId)
