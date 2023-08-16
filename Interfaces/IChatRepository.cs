@@ -11,6 +11,7 @@ namespace WebChatApp.Interfaces
         bool Save();
         User GetUser(int userID);
         void UpdateState(User user);
+        //int GetChatId(int userId);
         int DeleteChat(int chatId);
         ICollection<ChatDTO> GetUserChats(int userId);
     }

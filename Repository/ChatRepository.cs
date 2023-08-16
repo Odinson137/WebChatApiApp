@@ -23,6 +23,15 @@ namespace WebChatApp.Repository
             return chat;
         }
 
+        //public int GetChatId(int userId)
+        //{
+        //    int chatId = _context.Users.Include(user => user.Chats)
+        //                    .Where(user => user.UserID == userId)
+        //                    .Select(x => x.Chats.Last())
+        //                    .FirstOrDefault()?.ChatID ?? 0;
+        //    return chatId;
+        //}
+
         public ICollection<Chat> GetChats()
         {
             var chats = _context.Chats.ToList();

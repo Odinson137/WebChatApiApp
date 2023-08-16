@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System;
 using WebChatApp.Data;
 using WebChatApp.DTO;
 using WebChatApp.Interfaces;
@@ -7,7 +8,9 @@ using WebChatApp.Models;
 
 namespace WebChatApp.Controllers
 {
+    [ApiController]
     [Route("api/[controller]")]
+    //[Authorize]
     public class ChatController : Controller 
     {
 
@@ -45,6 +48,25 @@ namespace WebChatApp.Controllers
             return Ok(chats);
         }
 
+        //[HttpGet("{userId}")]
+        //[ProducesResponseType(200, Type = typeof(int))]
+        //[ProducesResponseType(400)]
+        //public IActionResult GetChatId(int userId)
+        //{
+        //    int chatId = _chatRepository.GetChatId(userId);
+
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
+
+        //    if (chatId == 0)
+        //    {
+        //        return BadRequest("Не найден");
+        //    }
+
+
+        //    return Ok(chatId);
+        //}
+
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -68,7 +90,7 @@ namespace WebChatApp.Controllers
 
             if (_chatRepository.Save())
             {
-                return Ok("Чат успешно создан");
+                return Ok(chat.ChatID);
             }
             else
             {
