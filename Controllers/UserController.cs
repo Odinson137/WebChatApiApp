@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using WebChatApp.Data;
 using WebChatApp.DTO;
 using WebChatApp.Interfaces;
@@ -11,18 +12,20 @@ namespace WebChatApp.Controllers
     public class UserController : Controller
     {
         private readonly IUserRepository _userRepository;
+        private readonly UserManager<User> _userManager;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(IUserRepository userRepository, UserManager<User> userManager)
         {
             _userRepository = userRepository;
+            _userManager = userManager;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<UserDTO>))]
         [ProducesResponseType(400)]
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            ICollection<UserDTO> users = _userRepository.GetUsers();
+            ICollection<UserDTO> users = await _userRepository.GetUsers();
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -30,18 +33,17 @@ namespace WebChatApp.Controllers
         }
 
 
-        [HttpGet("{userID}")]
+        [HttpGet("{userId}")]
         [ProducesResponseType(200, Type = typeof(UserDTO))]
-        public IActionResult GetUser(int userID)
+        public async Task<IActionResult> GetUser(string userID)
         {
-            User user = _userRepository.GetUser(userID);
+            User user = await _userRepository.GetUser(id: userID);
 
             if (user == null) return BadRequest(ModelState);
 
             UserDTO userCreate = new UserDTO()
             {
-                Name = user.Name,
-                LastName = user.LastName
+                UserName = user.UserName,
             };
 
             return Ok(userCreate);
@@ -50,28 +52,30 @@ namespace WebChatApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateUser([FromBody] UserCreate user)
+        public async Task<IActionResult> CreateUser([FromBody] UserCreate user)
         {
-            if (user == null)
-                return BadRequest(ModelState);
+            if (user == null || user.UserName == "" || user.Password == "")
+                return BadRequest("Not all data is filled in");
 
-            var userBD = _userRepository.GetUser(user.Name);
+            var userCheck = await _userRepository.GetUser(userName: user.UserName);
 
-            if (userBD != null)
+            if (userCheck != null)
             {
-                ModelState.AddModelError("", "Такой пользователь уже существует");
-                return StatusCode(422, ModelState);
+                return BadRequest("This username is already taken");
             }
-            User user1 = new User()
+
+            User createUser = new User()
             {
-                Name = user.Name,
-                LastName = user.LastName,
-                Password = user.Password
+                UserName = user.UserName,
             };
 
-            _userRepository.CreateUser(user1);
-         
-            return Ok("Succecfully created");
+            var result = await _userManager.CreateAsync(createUser, user.Password);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors.First().Description);
+
+            //await _userManager.AddToRoleAsync(createUser, UserRoles.User);
+            return Ok(createUser.Id);
         }
     }
 }

@@ -16,9 +16,9 @@ namespace WebChatApp.Repository
             _context = context;
         }
 
-        public Chat GetChat(int chatId)
+        public async Task<Chat> GetChat(int chatId)
         {
-            var chat = _context.Chats.Find(chatId);
+            var chat = await _context.Chats.FindAsync(chatId);
             _context.Entry(chat).State = EntityState.Unchanged;
             return chat;
         }
@@ -32,15 +32,15 @@ namespace WebChatApp.Repository
         //    return chatId;
         //}
 
-        public ICollection<Chat> GetChats()
+        public async Task<ICollection<Chat>> GetChats()
         {
-            var chats = _context.Chats.ToList();
+            var chats = await _context.Chats.ToListAsync();
             return chats;
         }
 
-        public User GetUser(int userID)
+        public async Task<User> GetUser(string userID)
         {
-            return _context.Users.Find(userID);
+            return await _context.Users.FindAsync(userID);
         }
 
         public void UpdateState(User user)
@@ -48,80 +48,47 @@ namespace WebChatApp.Repository
             _context.Entry(user).State = EntityState.Unchanged;
         }
 
-        public bool CreateNewChat(Chat chat)
+        public async Task<bool> CreateNewChat(Chat chat)
         {
-            _context.Chats.Add(chat);
+            await _context.Chats.AddAsync(chat);
             return true;
         }
 
-        public int DeleteChat(int chatId)
+        public async Task<int> DeleteChat(int chatId)
         {
-            return _context.Chats.Where(chat => chat.ChatID == chatId).ExecuteDelete();
+            return await _context.Chats.Where(chat => chat.ChatId == chatId).ExecuteDeleteAsync();
         }
 
-        public bool Save()
+        public async Task<bool> Save()
         {
-            if (_context.SaveChanges() != 0)
+            if (await _context.SaveChangesAsync() != 0)
             {
                 return true;
             }
             return false;
         }
 
-        public ICollection<ChatDTO> GetUserChats(int userId)
+        public async Task<ICollection<ChatDTO>> GetUserChats(string userId)
         {
-            ICollection<ChatDTO> chats = _context.Users
+            ICollection<ChatDTO> chats = await _context.Users
                 .Include(u => u.Chats)
                 .ThenInclude(c => c.Users)
-                .Where(u => u.UserID == userId)
+                .Where(u => u.Id == userId)
                 .SelectMany(u => u.Chats)
                 .Select(x => new ChatDTO()
                 {
-                    ChatID = x.ChatID,
+                    ChatId = x.ChatId,
                     Title = x.Title,
                     Users = x.Users.Select(u => new UserDTO()
                     {
-                        UserID = u.UserID,
-                        Name = u.Name,
-                        LastName = u.LastName,
+                        Id = u.Id,
+                        UserName = u.UserName,
+  
                     }).ToList()
                 })
-                .ToList();
-
+                .ToListAsync();
 
             return chats;
-            //User user = _context.Users.Find(userId);
-            //_context.Entry(user).Collection(c );
-            //ICollection<Chat> chats = _context.Chats.Include(x => x.Users).Where(c => c.Users.Any(u => u.UserID == userId))
-            //                            .Select(c => new Chat()
-            //                            {
-            //                                c.ChatID
-
-            //                            }).ToList();
-            //ICollection<Chat> chats = _context.Users.Find(userId).Chats;
-            //ICollection<Chat> chats = _context.Users.Include(x => x.Chats).Where(x => x.UserID == userId).FirstOrDefault()
-            //    .Chats.SelectMany(x => new Chat()
-            //    {
-            //        x.ChatID,
-            //        x.Title,
-            //        x.Users
-            //    });
-
-
-            //var chats = _context.Chats
-            //    .Include(chat => chat.Users)
-            //    .Where(chat => chat.Users.Any(user => user.UserID == userId));
-            //var chats = _context.Users
-            //     .Include(chat => chat.Chats).Where(u => u.UserID == userId).FirstOrDefault().Chats;
-            //var options = new JsonSerializerOptions
-            //{
-            //    ReferenceHandler = ReferenceHandler.Preserve,
-            //    // Другие настройки...
-            //};
-
-            //string jsonString = JsonSerializer.Serialize(chats, options);
-
-            //return jsonString;
         }
     }
 }

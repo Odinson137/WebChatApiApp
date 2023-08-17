@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebChatApp.Data;
 
@@ -11,9 +12,11 @@ using WebChatApp.Data;
 namespace WebChatApp.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230817082946_Second")]
+    partial class Second
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,13 +27,13 @@ namespace WebChatApp.Migrations
 
             modelBuilder.Entity("ChatUser", b =>
                 {
-                    b.Property<int>("ChatsChatId")
+                    b.Property<int>("ChatsChatID")
                         .HasColumnType("int");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ChatsChatId", "UsersId");
+                    b.HasKey("ChatsChatID", "UsersId");
 
                     b.HasIndex("UsersId");
 
@@ -172,30 +175,30 @@ namespace WebChatApp.Migrations
 
             modelBuilder.Entity("WebChatApp.Models.Chat", b =>
                 {
-                    b.Property<int>("ChatId")
+                    b.Property<int>("ChatID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatID"));
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ChatId");
+                    b.HasKey("ChatID");
 
                     b.ToTable("Chats");
                 });
 
             modelBuilder.Entity("WebChatApp.Models.Message", b =>
                 {
-                    b.Property<int>("MessageId")
+                    b.Property<int>("MessageID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageID"));
 
-                    b.Property<int>("ChatId")
+                    b.Property<int>("ChatID")
                         .HasColumnType("int");
 
                     b.Property<string>("Id")
@@ -209,9 +212,9 @@ namespace WebChatApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("MessageId");
+                    b.HasKey("MessageID");
 
-                    b.HasIndex("ChatId");
+                    b.HasIndex("ChatID");
 
                     b.ToTable("Messages");
                 });
@@ -235,11 +238,19 @@ namespace WebChatApp.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -248,6 +259,10 @@ namespace WebChatApp.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
@@ -285,7 +300,7 @@ namespace WebChatApp.Migrations
                 {
                     b.HasOne("WebChatApp.Models.Chat", null)
                         .WithMany()
-                        .HasForeignKey("ChatsChatId")
+                        .HasForeignKey("ChatsChatID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -351,7 +366,7 @@ namespace WebChatApp.Migrations
                 {
                     b.HasOne("WebChatApp.Models.Chat", null)
                         .WithMany("Messages")
-                        .HasForeignKey("ChatId")
+                        .HasForeignKey("ChatID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

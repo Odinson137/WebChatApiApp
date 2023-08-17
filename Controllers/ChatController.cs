@@ -25,9 +25,9 @@ namespace WebChatApp.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Chat>))]
         [ProducesResponseType(400)]
-        public IActionResult GetChats()
+        public async Task<IActionResult> GetChats()
         {
-            var chats = _chatRepository.GetChats();
+            var chats = await _chatRepository.GetChats();
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -38,9 +38,9 @@ namespace WebChatApp.Controllers
         [HttpGet("{userId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Chat>))]
         [ProducesResponseType(400)]
-        public IActionResult GetUserChats(int userId)
+        public async Task<IActionResult> GetUserChats(string userId)
         {
-            ICollection<ChatDTO> chats = _chatRepository.GetUserChats(userId);
+            ICollection<ChatDTO> chats = await _chatRepository.GetUserChats(userId);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -48,31 +48,12 @@ namespace WebChatApp.Controllers
             return Ok(chats);
         }
 
-        //[HttpGet("{userId}")]
-        //[ProducesResponseType(200, Type = typeof(int))]
-        //[ProducesResponseType(400)]
-        //public IActionResult GetChatId(int userId)
-        //{
-        //    int chatId = _chatRepository.GetChatId(userId);
-
-        //    if (!ModelState.IsValid)
-        //        return BadRequest(ModelState);
-
-        //    if (chatId == 0)
-        //    {
-        //        return BadRequest("Не найден");
-        //    }
-
-
-        //    return Ok(chatId);
-        //}
-
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateChat(string title, int userID)
+        public async Task<IActionResult> CreateChat(string title, string userId)
         {
-            User user = _chatRepository.GetUser(userID);
+            User user = await _chatRepository.GetUser(userId);
             if (user == null)
             {
                 return BadRequest("Пользователь с таким id не найден");
@@ -81,16 +62,16 @@ namespace WebChatApp.Controllers
 
             Chat chat = new Chat()
             {
-                ChatID = 0,
+                ChatId = 0,
                 Title = title,
                 Users = new List<User>() { user },
             };
 
-            _chatRepository.CreateNewChat(chat);
+            await _chatRepository.CreateNewChat(chat);
 
-            if (_chatRepository.Save())
+            if (await _chatRepository.Save())
             {
-                return Ok(chat.ChatID);
+                return Ok(chat.ChatId);
             }
             else
             {
@@ -101,12 +82,12 @@ namespace WebChatApp.Controllers
         [HttpPut]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult UpdateTitleChat(int chatId, string title)
+        public async Task<IActionResult> UpdateTitleChat(int chatId, string title)
         {
-            Chat chat = _chatRepository.GetChat(chatId);
+            Chat chat = await _chatRepository.GetChat(chatId);
             chat.Title = title;
 
-            if (_chatRepository.Save())
+            if (await _chatRepository.Save())
             {
                 return Ok("Название успешно изменено");
             } else
@@ -118,9 +99,9 @@ namespace WebChatApp.Controllers
         [HttpDelete("{chatId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult DeleteChat(int chatId)
+        public async Task<IActionResult> DeleteChat(int chatId)
         {
-            if (_chatRepository.DeleteChat(chatId) == 1)
+            if (await _chatRepository.DeleteChat(chatId) == 1)
             {
                 return Ok("Чат успешно удалён");
             }

@@ -4,9 +4,10 @@ namespace WebChatApp.Interfaces
 {
     public interface IMessageRepository
     {
-        ICollection<Message> GetChatMessages(int chatId);
-        void AddNewMessage(Message message);
+        Task<ICollection<Message>> GetChatMessages(int chatId);
+        Task AddNewMessage(Message message);
+        Task Save();
 
-        ICollection<int> GetIdChatUsers(int chatId);
+        Task<ICollection<string>> GetIdChatUsers(int chatId);
     }
 }

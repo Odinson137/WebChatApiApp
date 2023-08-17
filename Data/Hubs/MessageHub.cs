@@ -5,9 +5,9 @@ namespace WebChatApp.Data.Hubs
 {
     public class ChatHub : Hub
     {
-        private UserManager _userManager;
+        private ConnectionManager _userManager;
 
-        public ChatHub(UserManager userManager)
+        public ChatHub(ConnectionManager userManager)
         {
             _userManager = userManager;
         }
@@ -18,7 +18,7 @@ namespace WebChatApp.Data.Hubs
             Console.WriteLine("Подключился новый пользователь!");
         }
 
-        public void SendMessage(int userId)
+        public void SendMessage(string userId)
         {
             try
             {

@@ -14,9 +14,9 @@ namespace WebChatApp.Controllers
     {
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IMessageRepository _messageRepository;
-        private readonly UserManager _userManager;
+        private readonly ConnectionManager _userManager;
 
-        public MessageController(IHubContext<ChatHub> hubContext, IMessageRepository messageRepository, UserManager userManager)
+        public MessageController(IHubContext<ChatHub> hubContext, IMessageRepository messageRepository, ConnectionManager userManager)
         {
             _hubContext = hubContext;
             _messageRepository = messageRepository;
@@ -25,9 +25,9 @@ namespace WebChatApp.Controllers
 
         [HttpGet("{chatId}")]
         [ProducesResponseType(200, Type = typeof(Message))]
-        public IActionResult GetUserMessages([FromRoute] int chatId)
+        public async Task<IActionResult> GetUserMessages([FromRoute] int chatId)
         {
-            ICollection<Message> messages = _messageRepository.GetChatMessages(chatId);
+            ICollection<Message> messages = await _messageRepository.GetChatMessages(chatId);
             if (messages == null) return BadRequest(ModelState);
 
             return Ok(messages);
@@ -36,29 +36,23 @@ namespace WebChatApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult GetUser([FromBody] Message message)
+        public async Task<IActionResult> GetUser([FromBody] Message message)
         {
             message.SendTime = DateTime.Now;
-            _messageRepository.AddNewMessage(message);
-
+            await _messageRepository.AddNewMessage(message);
+            await _messageRepository.Save();
             // потом отправить эти данные прямикос из клиента, где эта инфа содержится
-            ICollection<int> usersId = _messageRepository.GetIdChatUsers(message.ChatID);
-            foreach (int userId in usersId)
+            ICollection<string> usersId = await _messageRepository.GetIdChatUsers(message.ChatId);
+            foreach (string userId in usersId)
             {
-                if (message.UserID != userId && _userManager.FindUserId(userId))
-                    _hubContext.Clients.Client(_userManager.GetConnectionId(userId))
-                        .SendAsync("OnReceiveMessage", message.UserID, message.ChatID, message.Text);
+                if (message.Id != userId && _userManager.FindUserId(userId))
+                {
+                    await _hubContext.Clients.Client(_userManager.GetConnectionId(userId))
+                        .SendAsync("OnReceiveMessage", message.Id, message.ChatId, message.Text);
+                }
             }
 
             return Ok("Сообщение успешно создано");
         }
-
-        //[HttpPost]
-        //public async Task<IActionResult> SendMessage([FromBody] string message)
-        //{
-        //    await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
-        //    Console.WriteLine(message);
-        //    return Ok();
-        //}
     }
 }

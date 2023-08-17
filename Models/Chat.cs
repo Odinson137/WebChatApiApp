@@ -7,7 +7,7 @@ namespace WebChatApp.Models
     public class Chat
     {
         [Key]
-        public int ChatID { get; set; }
+        public int ChatId { get; set; }
         public string Title { get; set; }
 
         //[JsonIgnore]

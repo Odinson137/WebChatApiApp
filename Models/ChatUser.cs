@@ -2,7 +2,7 @@
 {
     public class ChatUser
     {
-        public int UserId { get; set; }
+        public string Id { get; set; }
         public User User { get; set; }
         public int ChatId { get; set; }
         public Chat Chat { get; set; }

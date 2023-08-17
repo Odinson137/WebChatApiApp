@@ -14,32 +14,36 @@ namespace WebChatApp.Repository
             _context = context;
         }
 
-        public void AddNewMessage(Message message)
+        public async Task AddNewMessage(Message message)
         {
-            _context.Add(message);
-            _context.SaveChanges();
+            await _context.AddAsync(message);
         }
 
-        public ICollection<Message> GetChatMessages(int chatId)
+        public async Task Save()
         {
-            ICollection<Message> messages = _context.Chats
-                                            .Include(x => x.Messages)
-                                            .Where(chat => chat.ChatID == chatId)
-                                            .SingleOrDefault()?
-                                            .Messages.ToList() ?? new List<Message>();
-            return messages;
+            await _context.SaveChangesAsync();
         }
 
-        public ICollection<int> GetIdChatUsers(int chatId)
+        public async Task<ICollection<Message>> GetChatMessages(int chatId)
         {
-            ICollection<int> chatUsers = _context.Chats
-                                            .Include(u => u.Users)
-                                            .Where(chat => chat.ChatID == chatId)
-                                            .SingleOrDefault()?
-                                            .Users
-                                            .Select(user => user.UserID)
-                                            .ToList() ?? new List<int>();
-            return chatUsers;
+            var chatWithMessages = await _context.Chats
+                                                .Include(chat => chat.Messages)
+                                                .Where(chat => chat.ChatId == chatId)
+                                                .FirstOrDefaultAsync();
+
+            return chatWithMessages?.Messages ?? new List<Message>();
+        }
+
+
+        public async Task<ICollection<string>> GetIdChatUsers(int chatId)
+        {
+            var chatUsers = await _context.Chats
+                                        .Include(u => u.Users)
+                                        .Where(chat => chat.ChatId == chatId)
+                                        .FirstOrDefaultAsync();
+
+            return chatUsers?.Users.Select(user => user.Id)
+                                .ToList() ?? new List<string>();
         }
     }
 }

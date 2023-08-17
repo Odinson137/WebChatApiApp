@@ -5,14 +5,14 @@ namespace WebChatApp.Interfaces
 {
     public interface IChatRepository
     {
-        bool CreateNewChat(Chat chat);
-        Chat GetChat(int chatId);
-        ICollection<Chat> GetChats();
-        bool Save();
-        User GetUser(int userID);
+        Task<bool> CreateNewChat(Chat chat);
+        Task<Chat> GetChat(int chatId);
+        Task<ICollection<Chat>> GetChats();
+        Task<bool> Save();
+        Task<User> GetUser(string userID);
         void UpdateState(User user);
         //int GetChatId(int userId);
-        int DeleteChat(int chatId);
-        ICollection<ChatDTO> GetUserChats(int userId);
-    }
+        Task<int> DeleteChat(int chatId);
+        Task<ICollection<ChatDTO>> GetUserChats(string userId);
+    }   
 }

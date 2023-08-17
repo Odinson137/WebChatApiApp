@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WebChatApp.Data;
 using WebChatApp.DTO;
 using WebChatApp.Interfaces;
@@ -16,35 +15,40 @@ namespace WebChatApp.Repository
             _context = context;
         }
 
-        public ICollection<UserDTO> GetUsers()
+        public async Task<ICollection<UserDTO>> GetUsers()
         {
-            ICollection<UserDTO> users = _context.Users.Select(x => new UserDTO()
+            ICollection<UserDTO> users = await _context.Users.Select(x => new UserDTO()
             {
-                UserID = x.UserID,
-                Name = x.Name,
-                LastName = x.LastName,
-            }).ToList();
+                Id = x.Id,
+                UserName = x.UserName,
+            }).ToListAsync();
 
             return users;
         }
 
-        public void CreateUser(User user)
+        //public Task CreateUser(User user)
+        //{
+        //    await _context.Users.Add(user);
+        //    await _context.SaveChanges();
+        //}
+
+        //public 
+
+        public async Task<bool> CheckUser(string userName)
         {
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            return await _context.Users.AnyAsync(x => x.UserName == userName);
         }
 
-        public User GetUser(int id)
+        public async Task<User> GetUser(string id = "", string userName = "")
         {
+            if (id == "")
+            {
+                return await _context.Users.Where(x => x.UserName == userName).FirstOrDefaultAsync();
+            } else
+            {
+                return await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+            }
 
-            int count = _context.ChangeTracker.Entries().Count();
-            Console.WriteLine($"{count}");
-            return _context.Users.Where(u => u.UserID == id).FirstOrDefault();
-        }
-
-        public User GetUser(string name)
-        {
-            return _context.Users.Where(u => u.Name == name).FirstOrDefault();
         }
     }
 }
