@@ -6,7 +6,8 @@ namespace WebChatApp.Interfaces
     public interface IUserRepository
     {
         Task<ICollection<UserDTO>> GetUsers();
-        Task<User> GetUser(string id = "", string userName = "");
+        Task<User> GetUserByUserNameAsync(string userName);
+        Task<User> GetUserByIdAsync(string id);
         //void CreateUser(User user);
     }
 }

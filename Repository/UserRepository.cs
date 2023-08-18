@@ -39,16 +39,14 @@ namespace WebChatApp.Repository
             return await _context.Users.AnyAsync(x => x.UserName == userName);
         }
 
-        public async Task<User> GetUser(string id = "", string userName = "")
+        public async Task<User> GetUserByUserNameAsync(string userName)
         {
-            if (id == "")
-            {
-                return await _context.Users.Where(x => x.UserName == userName).FirstOrDefaultAsync();
-            } else
-            {
-                return await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
-            }
+            return await _context.Users.Where(x => x.UserName == userName).FirstOrDefaultAsync();
+        }
 
+        public async Task<User> GetUserByIdAsync(string id)
+        {
+            return await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
         }
     }
 }
