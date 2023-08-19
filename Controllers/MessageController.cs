@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using WebChatApp.Data;
 using WebChatApp.Data.Hubs;
@@ -9,7 +10,7 @@ namespace WebChatApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize]
+    [Authorize]
     public class MessageController : Controller
     {
         private readonly IHubContext<ChatHub> _hubContext;
