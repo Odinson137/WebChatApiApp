@@ -7,11 +7,11 @@ namespace WebChatApp.Interfaces
     {
         Task<bool> CreateNewChat(Chat chat);
         Task<Chat> GetChat(int chatId);
+        Task<Chat> GetChatWithUsers(int chatId);
         Task<ICollection<Chat>> GetChats();
         Task<bool> Save();
         Task<User> GetUser(string userID);
-        void UpdateState(User user);
-        //int GetChatId(int userId);
+        void UpdateState<T>(T value);
         Task<int> DeleteChat(int chatId);
         Task<ICollection<ChatDTO>> GetUserChats(string userId);
     }   

@@ -8,6 +8,10 @@ using WebChatApp.Repository;
 using WebChatApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,17 +43,45 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddIdentity<User, IdentityRole>()
+
+
+builder.Services.AddIdentity<User, IdentityRole>(options =>
+{
+    // Ваши другие настройки Identity...
+
+    // Настройки требований паролей
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+})
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddDistributedMemoryCache(); 
 
 builder.Services.AddSession();
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie();
+
+//builder.Services.AddAuthorization();
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//                .AddJwtBearer(options =>
+//                {
+//                    options.TokenValidationParameters = new TokenValidationParameters
+//                    {
+//                        ValidateIssuer = false,
+//                        ValidateAudience = false,
+//                        ValidateLifetime = true,
+//                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("/x3AoS1wFf7cuO9UHbCMijcMCk3oe46+1ozMPyZnkdw=")),
+//                        ValidateIssuerSigningKey = true,
+//                    };
+//                });
+
+
 
 builder.Services.AddScoped<UserManager<User>>();
+
 
 var app = builder.Build();
 
@@ -63,6 +95,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

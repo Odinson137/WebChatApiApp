@@ -19,18 +19,19 @@ namespace WebChatApp.Repository
         public async Task<Chat> GetChat(int chatId)
         {
             var chat = await _context.Chats.FindAsync(chatId);
-            _context.Entry(chat).State = EntityState.Unchanged;
+            UpdateState(chat);
             return chat;
         }
 
-        //public int GetChatId(int userId)
-        //{
-        //    int chatId = _context.Users.Include(user => user.Chats)
-        //                    .Where(user => user.UserID == userId)
-        //                    .Select(x => x.Chats.Last())
-        //                    .FirstOrDefault()?.ChatID ?? 0;
-        //    return chatId;
-        //}
+        public async Task<Chat> GetChatWithUsers(int chatId)
+        {
+            var chat = await _context.Chats
+                .Include(chat => chat.Users)
+                .Where(chat => chat.ChatId == chatId)
+                .FirstOrDefaultAsync();
+            UpdateState(chat);
+            return chat;
+        }
 
         public async Task<ICollection<Chat>> GetChats()
         {
@@ -43,9 +44,9 @@ namespace WebChatApp.Repository
             return await _context.Users.FindAsync(userID);
         }
 
-        public void UpdateState(User user)
+        public void UpdateState<T>(T value)
         {
-            _context.Entry(user).State = EntityState.Unchanged;
+            _context.Entry(value).State = EntityState.Unchanged;
         }
 
         public async Task<bool> CreateNewChat(Chat chat)

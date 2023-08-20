@@ -10,7 +10,7 @@ namespace WebChatApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class MessageController : Controller
     {
         private readonly IHubContext<ChatHub> _hubContext;

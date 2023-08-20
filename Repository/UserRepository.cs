@@ -26,14 +26,6 @@ namespace WebChatApp.Repository
             return users;
         }
 
-        //public Task CreateUser(User user)
-        //{
-        //    await _context.Users.Add(user);
-        //    await _context.SaveChanges();
-        //}
-
-        //public 
-
         public async Task<bool> CheckUser(string userName)
         {
             return await _context.Users.AnyAsync(x => x.UserName == userName);
@@ -48,5 +40,20 @@ namespace WebChatApp.Repository
         {
             return await _context.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
         }
+
+        public async Task<int> DeleteUserMessages(string userId)
+        {
+            return await _context.Messages.Where(message => message.Id == userId).ExecuteDeleteAsync();
+        }
+        public async Task<int> DeleteEmptyChats()
+        {
+            return await _context.Chats.Where(chat => chat.Users.Count() == 0).ExecuteDeleteAsync();
+        }
+
+        public async Task<int> DeleteUser(string userId)
+        {
+            return await _context.Users.Where(user => user.Id == userId).ExecuteDeleteAsync();
+        }
+
     }
 }

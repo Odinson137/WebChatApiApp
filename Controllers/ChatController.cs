@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using System;
-using WebChatApp.Data;
 using WebChatApp.DTO;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
@@ -11,15 +9,16 @@ namespace WebChatApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class ChatController : Controller 
     {
 
         private readonly IChatRepository _chatRepository;
-
-        public ChatController(IChatRepository chatRepository)
+        private readonly UserManager<User> _userManager;
+        public ChatController(IChatRepository chatRepository, UserManager<User> userManager)
         {
             _chatRepository = chatRepository;
+            _userManager = userManager;
         }
 
 
@@ -32,13 +31,12 @@ namespace WebChatApp.Controllers
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             return Ok(chats);
         }
 
         [HttpGet("{userId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Chat>))]
-        [ProducesResponseType(400)]
         public async Task<IActionResult> GetUserChats(string userId)
         {
             ICollection<ChatDTO> chats = await _chatRepository.GetUserChats(userId);
@@ -50,14 +48,12 @@ namespace WebChatApp.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
         public async Task<IActionResult> CreateChat(string title, string userId)
         {
-            User user = await _chatRepository.GetUser(userId);
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return BadRequest("Пользователь с таким id не найден");
+                return BadRequest("The user with this id was not found");
             }
             _chatRepository.UpdateState(user);
 
@@ -80,9 +76,27 @@ namespace WebChatApp.Controllers
             }
         }
 
+        [HttpPost("{chatId}/{userName}")]
+        public async Task<IActionResult> AddUserToChat(int chatId, string userName)
+        {
+            var chat = await _chatRepository.GetChatWithUsers(chatId);
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            _chatRepository.UpdateState(user);
+
+            chat.Users.Add(user);
+            if (await _chatRepository.Save())
+            {
+                return Ok("The user is successfully connected to the chat");
+            }
+            return BadRequest("Error when adding a user to a chat");
+        }
+
         [HttpPut]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
         public async Task<IActionResult> UpdateTitleChat(int chatId, string title)
         {
             Chat chat = await _chatRepository.GetChat(chatId);
@@ -90,25 +104,23 @@ namespace WebChatApp.Controllers
 
             if (await _chatRepository.Save())
             {
-                return Ok("Название успешно изменено");
+                return Ok("Name changed successfully");
             } else
             {
-                return BadRequest("Название не получилось поменять");
+                return BadRequest("The name couldn't be changed");
             }
         }
 
         [HttpDelete("{chatId}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
         public async Task<IActionResult> DeleteChat(int chatId)
         {
             if (await _chatRepository.DeleteChat(chatId) == 1)
             {
-                return Ok("Чат успешно удалён");
+                return Ok("Chat successfully deleted");
             }
             else
             {
-                return BadRequest("Чат не удалён");
+                return BadRequest("The chat has not been deleted");
             }
         }
     }

@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using WebChatApp.Data;
 using WebChatApp.DTO;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
+using WebChatApp.Repository;
 
 namespace WebChatApp.Controllers
 {
@@ -14,6 +19,7 @@ namespace WebChatApp.Controllers
         private readonly IUserRepository _userRepository;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        //private readonly string _secretKey = "/x3AoS1wFf7cuO9UHbCMijcMCk3oe46+1ozMPyZnkdw=";
 
         public UserController(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager)
         {
@@ -46,6 +52,23 @@ namespace WebChatApp.Controllers
             UserDTO userCreate = new UserDTO()
             {
                 UserName = user.UserName,
+            };
+
+            return Ok(userCreate);
+        }
+
+        [HttpGet("Name/{userName}")]
+        [ProducesResponseType(200, Type = typeof(UserDTO))]
+        public async Task<IActionResult> GetUserByName(string userName)
+        {
+            User user = await _userManager.FindByNameAsync(userName);
+
+            if (user == null) return BadRequest(ModelState);
+
+            UserDTO userCreate = new UserDTO()
+            {
+                Id = user.Id,
+                UserName = user.UserName
             };
 
             return Ok(userCreate);
@@ -102,5 +125,64 @@ namespace WebChatApp.Controllers
 
             return BadRequest("Wrong credentials. Please, try again");
         }
+
+
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteChat(string userId)
+        {
+            if (await _userRepository.DeleteUser(userId) != 1)
+            {
+                return BadRequest("Пользователь не удалён");
+            }
+
+            if (await _userRepository.DeleteEmptyChats() != 1)
+            {
+                return BadRequest("Пользователь удалён, но пустые чаты не очистились");
+            }
+            return Ok("Пользователь со всеми данными успешно удалён");
+
+        }
+
+        //[HttpPost("TokenLogin")]
+        //public async Task<IActionResult> TokenLogin([FromBody] UserCreate user)
+        //{
+        //    if (user == null || user.UserName == "" || user.Password == "")
+        //        return BadRequest("Not all data is filled in");
+
+        //    var userCheck = await _userManager.FindByNameAsync(user.UserName);
+
+        //    if (userCheck == null)
+        //    {
+        //        return BadRequest("This user does not exist");
+        //    }
+
+        //    var passwordCheck = await _userManager.CheckPasswordAsync(userCheck, user.Password);
+        //    if (passwordCheck)
+        //    {
+        //        var result = await _signInManager.PasswordSignInAsync(userCheck, user.Password, false, false);
+        //        if (result.Succeeded)
+        //        {
+        //            //var token = GenerateToken();
+
+        //            return Ok(userCheck.Id);
+        //        }
+        //    }
+
+        //    return BadRequest("Wrong credentials. Please, try again");
+        //}
+
+        //private string GenerateToken()
+        //{
+
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        //    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        //    var token = new JwtSecurityToken(
+        //        expires: DateTime.UtcNow.AddHours(1), // Время жизни токена
+        //        signingCredentials: credentials
+        //    );
+
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
     }
 }
