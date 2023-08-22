@@ -11,8 +11,9 @@ namespace WebChatApp.Interfaces
         Task<ICollection<Chat>> GetChats();
         Task<bool> Save();
         Task<User> GetUser(string userID);
-        void UpdateState<T>(T value);
+        //void UpdateState<T>(T value);
         Task<int> DeleteChat(int chatId);
+        Task<int> DeleteUserMessagesInChat(int chatId);
         Task<ICollection<ChatDTO>> GetUserChats(string userId);
     }   
 }

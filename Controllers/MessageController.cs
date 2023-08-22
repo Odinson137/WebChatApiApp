@@ -15,13 +15,13 @@ namespace WebChatApp.Controllers
     {
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IMessageRepository _messageRepository;
-        private readonly ConnectionManager _userManager;
+        private readonly ConnectionManager _сonnectionManager;
 
-        public MessageController(IHubContext<ChatHub> hubContext, IMessageRepository messageRepository, ConnectionManager userManager)
+        public MessageController(IHubContext<ChatHub> hubContext, IMessageRepository messageRepository, ConnectionManager сonnectionManager)
         {
             _hubContext = hubContext;
             _messageRepository = messageRepository;
-            _userManager = userManager;
+            _сonnectionManager = сonnectionManager;
         }
 
         [HttpGet("{chatId}")]
@@ -46,9 +46,9 @@ namespace WebChatApp.Controllers
             ICollection<string> usersId = await _messageRepository.GetIdChatUsers(message.ChatId);
             foreach (string userId in usersId)
             {
-                if (message.Id != userId && _userManager.FindUserId(userId))
+                if (message.Id != userId && await _сonnectionManager.FindUserId(userId))
                 {
-                    await _hubContext.Clients.Client(_userManager.GetConnectionId(userId))
+                    await _hubContext.Clients.Client(await _сonnectionManager.GetConnectionId(userId))
                         .SendAsync("OnReceiveMessage", message.Id, message.ChatId, message.Text);
                 }
             }

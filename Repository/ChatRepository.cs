@@ -19,7 +19,6 @@ namespace WebChatApp.Repository
         public async Task<Chat> GetChat(int chatId)
         {
             var chat = await _context.Chats.FindAsync(chatId);
-            UpdateState(chat);
             return chat;
         }
 
@@ -28,25 +27,19 @@ namespace WebChatApp.Repository
             var chat = await _context.Chats
                 .Include(chat => chat.Users)
                 .Where(chat => chat.ChatId == chatId)
-                .FirstOrDefaultAsync();
-            UpdateState(chat);
+                .FirstAsync();
             return chat;
         }
 
         public async Task<ICollection<Chat>> GetChats()
         {
-            var chats = await _context.Chats.ToListAsync();
+            var chats = await _context.Chats.AsNoTracking().ToListAsync();
             return chats;
         }
 
         public async Task<User> GetUser(string userID)
         {
             return await _context.Users.FindAsync(userID);
-        }
-
-        public void UpdateState<T>(T value)
-        {
-            _context.Entry(value).State = EntityState.Unchanged;
         }
 
         public async Task<bool> CreateNewChat(Chat chat)
@@ -58,6 +51,11 @@ namespace WebChatApp.Repository
         public async Task<int> DeleteChat(int chatId)
         {
             return await _context.Chats.Where(chat => chat.ChatId == chatId).ExecuteDeleteAsync();
+        }
+
+        public async Task<int> DeleteUserMessagesInChat(int chatId)
+        {
+            return await _context.Messages.Where(m => m.ChatId == chatId).ExecuteDeleteAsync();
         }
 
         public async Task<bool> Save()
@@ -73,7 +71,7 @@ namespace WebChatApp.Repository
         {
             ICollection<ChatDTO> chats = await _context.Users
                 .Include(u => u.Chats)
-                .ThenInclude(c => c.Users)
+                .AsNoTracking()
                 .Where(u => u.Id == userId)
                 .SelectMany(u => u.Chats)
                 .Select(x => new ChatDTO()

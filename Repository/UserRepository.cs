@@ -50,9 +50,9 @@ namespace WebChatApp.Repository
             return await _context.Chats.Where(chat => chat.Users.Count() == 0).ExecuteDeleteAsync();
         }
 
-        public async Task<int> DeleteUser(string userId)
+        public async Task<int> DeleteUser(string userName)
         {
-            return await _context.Users.Where(user => user.Id == userId).ExecuteDeleteAsync();
+            return await _context.Users.Where(user => user.UserName == userName).ExecuteDeleteAsync();
         }
 
     }

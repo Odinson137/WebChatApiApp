@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using WebChatApp.Data;
+using WebChatApp.Data.Hubs;
 using WebChatApp.DTO;
 using WebChatApp.Interfaces;
 using WebChatApp.Models;
@@ -15,10 +19,16 @@ namespace WebChatApp.Controllers
 
         private readonly IChatRepository _chatRepository;
         private readonly UserManager<User> _userManager;
-        public ChatController(IChatRepository chatRepository, UserManager<User> userManager)
+        private readonly ConnectionManager _сonnectionManager;
+        private readonly IHubContext<ChatHub> _hubContext;
+
+        public ChatController(IChatRepository chatRepository, UserManager<User> userManager, 
+            ConnectionManager сonnectionManager, IHubContext<ChatHub> hubContext)
         {
+            _hubContext = hubContext;
             _chatRepository = chatRepository;
             _userManager = userManager;
+            _сonnectionManager = сonnectionManager;
         }
 
 
@@ -55,7 +65,7 @@ namespace WebChatApp.Controllers
             {
                 return BadRequest("The user with this id was not found");
             }
-            _chatRepository.UpdateState(user);
+            //_chatRepository.UpdateState(user);
 
             Chat chat = new Chat()
             {
@@ -86,14 +96,50 @@ namespace WebChatApp.Controllers
                 return BadRequest("User not found");
             }
 
-            _chatRepository.UpdateState(user);
-
             chat.Users.Add(user);
             if (await _chatRepository.Save())
             {
+                var connectionId = await _сonnectionManager.GetConnectionId(user.Id);
+                await _hubContext.Clients.Client(connectionId)
+                    .SendAsync("OnReceiveInvitation", chat);
                 return Ok("The user is successfully connected to the chat");
             }
             return BadRequest("Error when adding a user to a chat");
+        }
+
+        [HttpPut("{chatId}/{userName}")]
+        public async Task<IActionResult> ExitUserFromChat(int chatId, string userName)
+        {
+            Chat chat = await _chatRepository.GetChatWithUsers(chatId);
+            User user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            chat.Users.Remove(user);
+
+            await _chatRepository.DeleteUserMessagesInChat(chatId);
+
+            if (chat.Users.Count == 0)
+            {
+                if (await _chatRepository.DeleteChat(chatId) == 1)
+                {
+                    return Ok("The chat is successfully deleted");
+                }
+                return BadRequest("Error when deleting a user from a chat");
+            } else
+            {
+                if (await _chatRepository.Save())
+                {
+                    //var connectionId = _сonnectionManager.GetConnectionId(user.Id);
+                    //await _hubContext.Clients.Client(connectionId)
+                    //    .SendAsync("OnReceiveInvitation", chat);
+                    return Ok("The user is successfully deleted from the chat");
+                }
+                return BadRequest("Error when deleting a user from a chat");
+            }
+
         }
 
         [HttpPut]

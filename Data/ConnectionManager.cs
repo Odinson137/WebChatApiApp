@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Components.Web;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace WebChatApp.Data
 {
     public class ConnectionManager
     {
-
-
         private ConcurrentDictionary<string, string> _usersId = new ConcurrentDictionary<string, string>();
 
         public bool AddUserId(string userId, string userConnectionId)
@@ -18,43 +15,40 @@ namespace WebChatApp.Data
             return false;
         }
 
-        public bool FindUserId(string userId)
+        public async Task<bool> FindUserId(string userId)
         {
             return _usersId.ContainsKey(userId);
         }
 
-        public string GetConnectionId(string userId)
+        public async Task<string> GetConnectionId(string userId)
         {
             return _usersId[userId];
         }
 
-        public string GetUserConnectionId(string userId)
+        public bool DeleteUserById(string userId)
         {
-            if (_usersId.TryGetValue(userId, out string connectionUserId))
+            if (_usersId.TryRemove(userId, out string? _))
             {
-                return connectionUserId;
+                return true;
             }
-            throw new InvalidOperationException("User not found");
+            return false;
         }
 
-        //public bool DeleteUser(string userId = "", string userConnectionId = "")
-        //{
-        //    if (userId == "")
-        //    {
-        //        userId = GetIdForValue(userConnectionId);
-        //    }
-        //    if (_usersId.TryRemove(userId, out string temp))
-        //    {
-        //        return true;
-        //    } 
-        //    return false;
-        //}
-
-        private string GetIdForValue(string connectionId)
+        public bool DeleteUserByConnectionId(string userConnectionId)
         {
-            return _usersId
-                .Where(x => x.Value == connectionId)
-                .Select(x => x.Key).FirstOrDefault();
+            string userId = GetIdForValue(userConnectionId);
+            if (userId != null)
+            {
+                return DeleteUserById(userId);
+            } 
+            return false;
+        }
+
+        private string? GetIdForValue(string connectionId)
+        {
+            var userId = _usersId.Where(x => x.Value == connectionId)
+                            .Select(x => x.Key).FirstOrDefault();
+            return userId;
         }
     }
 }

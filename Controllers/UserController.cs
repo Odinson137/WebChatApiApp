@@ -19,7 +19,6 @@ namespace WebChatApp.Controllers
         private readonly IUserRepository _userRepository;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
-        //private readonly string _secretKey = "/x3AoS1wFf7cuO9UHbCMijcMCk3oe46+1ozMPyZnkdw=";
 
         public UserController(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager)
         {
@@ -43,7 +42,7 @@ namespace WebChatApp.Controllers
 
         [HttpGet("{userId}")]
         [ProducesResponseType(200, Type = typeof(UserDTO))]
-        public async Task<IActionResult> GetUser(string userId)
+        public async Task<IActionResult> GetUser([FromQuery] string userId)
         {
             User user = await _userManager.FindByIdAsync(userId);
 
@@ -59,7 +58,7 @@ namespace WebChatApp.Controllers
 
         [HttpGet("Name/{userName}")]
         [ProducesResponseType(200, Type = typeof(UserDTO))]
-        public async Task<IActionResult> GetUserByName(string userName)
+        public async Task<IActionResult> GetUserByName([FromQuery] string userName)
         {
             User user = await _userManager.FindByNameAsync(userName);
 
@@ -127,10 +126,10 @@ namespace WebChatApp.Controllers
         }
 
 
-        [HttpDelete("{userId}")]
-        public async Task<IActionResult> DeleteChat(string userId)
+        [HttpDelete("{userName}")]
+        public async Task<IActionResult> DeleteUser([FromQuery] string userName)
         {
-            if (await _userRepository.DeleteUser(userId) != 1)
+            if (await _userRepository.DeleteUser(userName) != 1)
             {
                 return BadRequest("Пользователь не удалён");
             }

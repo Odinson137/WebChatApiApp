@@ -15,8 +15,9 @@ namespace WebChatApp.Models
         //public string LastName { get; set; }
         //[Required]
         //[PasswordPropertyText]
-        //[JsonIgnore]
+
         //public string Password { get; set; }
+        [JsonIgnore]
         public ICollection<Chat> Chats { get; set; }  
     }
 }
