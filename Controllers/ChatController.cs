@@ -65,7 +65,6 @@ namespace WebChatApp.Controllers
             {
                 return BadRequest("The user with this id was not found");
             }
-            //_chatRepository.UpdateState(user);
 
             Chat chat = new Chat()
             {
@@ -99,9 +98,16 @@ namespace WebChatApp.Controllers
             chat.Users.Add(user);
             if (await _chatRepository.Save())
             {
-                var connectionId = await _сonnectionManager.GetConnectionId(user.Id);
-                await _hubContext.Clients.Client(connectionId)
-                    .SendAsync("OnReceiveInvitation", chat);
+                foreach (var listUser in chat.Users)
+                {
+                    if (await _сonnectionManager.FindUserId(listUser.Id)) // if user is online
+                    {
+                        await _hubContext.Clients.Client(await _сonnectionManager.GetConnectionId(listUser.Id))
+                            .SendAsync("OnReceiveInvitation", chat.ChatId, chat.Title, chat.Users
+                                            .Select(u => new { u.Id, u.UserName }).ToList());
+                    }
+                }
+                
                 return Ok("The user is successfully connected to the chat");
             }
             return BadRequest("Error when adding a user to a chat");
@@ -110,8 +116,13 @@ namespace WebChatApp.Controllers
         [HttpPut("{chatId}/{userName}")]
         public async Task<IActionResult> ExitUserFromChat(int chatId, string userName)
         {
-            Chat chat = await _chatRepository.GetChatWithUsers(chatId);
-            User user = await _userManager.FindByNameAsync(userName);
+            var chat = await _chatRepository.GetChatWithUsers(chatId);
+            if (chat == null)
+            {
+                return BadRequest("Chat not found");
+            }
+
+            var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
                 return BadRequest("User not found");

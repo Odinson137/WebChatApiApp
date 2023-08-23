@@ -13,16 +13,16 @@ namespace WebChatApp.Data.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            
             Console.WriteLine("Подключился новый пользователь!");
         }
 
-        //public override async Task OnDisconnectedAsync(Exception exception)
-        //{
-        //    string userConnectionId = Context.ConnectionId;
-        //    _connectionManager.DeleteUserByConnectionId(userConnectionId);
-        //    await base.OnDisconnectedAsync(exception);
-        //}
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            string userConnectionId = Context.ConnectionId;
+            Console.WriteLine("DicConnected - " + userConnectionId);
+            await _connectionManager.DeleteUserByConnectionIdAsync(userConnectionId);
+            await base.OnDisconnectedAsync(exception);
+        }
 
         public void SendMessage(string userId)
         {

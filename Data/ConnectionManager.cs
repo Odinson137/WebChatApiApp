@@ -22,10 +22,18 @@ namespace WebChatApp.Data
 
         public async Task<string> GetConnectionId(string userId)
         {
-            return _usersId[userId];
+            if (_usersId.TryGetValue(userId, out string connectionId))
+            {
+                return connectionId;
+            }
+            else
+            {
+                Console.WriteLine("НЕ найдён");
+                return null;
+            }
         }
 
-        public bool DeleteUserById(string userId)
+        public async Task<bool> DeleteUserById(string userId)
         {
             if (_usersId.TryRemove(userId, out string? _))
             {
@@ -34,17 +42,17 @@ namespace WebChatApp.Data
             return false;
         }
 
-        public bool DeleteUserByConnectionId(string userConnectionId)
+        public async Task<bool> DeleteUserByConnectionIdAsync(string userConnectionId)
         {
-            string userId = GetIdForValue(userConnectionId);
+            string userId = await GetIdForValue(userConnectionId);
             if (userId != null)
             {
-                return DeleteUserById(userId);
+                return await DeleteUserById(userId);
             } 
             return false;
         }
 
-        private string? GetIdForValue(string connectionId)
+        private async Task<string?> GetIdForValue(string connectionId)
         {
             var userId = _usersId.Where(x => x.Value == connectionId)
                             .Select(x => x.Key).FirstOrDefault();

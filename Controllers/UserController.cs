@@ -127,17 +127,15 @@ namespace WebChatApp.Controllers
 
 
         [HttpDelete("{userName}")]
-        public async Task<IActionResult> DeleteUser([FromQuery] string userName)
+        public async Task<IActionResult> DeleteUser(string userName)
         {
             if (await _userRepository.DeleteUser(userName) != 1)
             {
                 return BadRequest("Пользователь не удалён");
             }
 
-            if (await _userRepository.DeleteEmptyChats() != 1)
-            {
-                return BadRequest("Пользователь удалён, но пустые чаты не очистились");
-            }
+            await _userRepository.DeleteEmptyChats();
+            
             return Ok("Пользователь со всеми данными успешно удалён");
 
         }
