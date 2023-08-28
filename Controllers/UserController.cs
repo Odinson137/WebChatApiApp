@@ -19,12 +19,14 @@ namespace WebChatApp.Controllers
         private readonly IUserRepository _userRepository;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration;
 
-        public UserController(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager)
+        public UserController(IUserRepository userRepository, UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -100,6 +102,7 @@ namespace WebChatApp.Controllers
         }
 
         [HttpPost("Login")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Chat>))]
         public async Task<IActionResult> Login([FromBody] UserCreate user)
         {
             if (user == null || user.UserName == "" || user.Password == "")
@@ -112,17 +115,35 @@ namespace WebChatApp.Controllers
                 return BadRequest("This user does not exist");
             }
 
-            var passwordCheck = await _userManager.CheckPasswordAsync(userCheck, user.Password);
-            if (passwordCheck)
+            var result = await _signInManager.CheckPasswordSignInAsync(userCheck, user.Password, false);
+            if (result.Succeeded)
             {
-                var result = await _signInManager.PasswordSignInAsync(userCheck, user.Password, false, false);
-                if (result.Succeeded)
-                {
-                    return Ok(userCheck.Id);
-                }
+                var token = GenerateJwtToken(userCheck);
+                return Ok(new { userCheck.Id, token });
             }
 
             return BadRequest("Wrong credentials. Please, try again");
+        }
+
+        private string GenerateJwtToken(IdentityUser user)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
+
+            var token = new JwtSecurityToken(
+                _configuration["Jwt:Issuer"],
+                _configuration["Jwt:Issuer"],
+                claims,
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
 

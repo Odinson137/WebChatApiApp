@@ -26,7 +26,7 @@ namespace WebChatApp.Repository
 
         public async Task<ICollection<Message>> GetChatMessages(int chatId)
         {
-            var chatWithMessages = await _context.Chats
+            var chatWithMessages = await _context.Chats.AsNoTracking()
                                                 .Include(chat => chat.Messages)
                                                 .Where(chat => chat.ChatId == chatId)
                                                 .FirstOrDefaultAsync();
@@ -37,7 +37,7 @@ namespace WebChatApp.Repository
 
         public async Task<ICollection<string>> GetIdChatUsers(int chatId)
         {
-            var chatUsers = await _context.Chats
+            var chatUsers = await _context.Chats.AsNoTracking()
                                         .Include(u => u.Users)
                                         .Where(chat => chat.ChatId == chatId)
                                         .FirstOrDefaultAsync();

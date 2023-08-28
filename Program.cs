@@ -7,13 +7,15 @@ using WebChatApp.Interfaces;
 using WebChatApp.Repository;
 using WebChatApp.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.OAuth;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+IConfiguration configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
 
 // Add services to the container.
 var policyName = "defaultCorsPolicy";
@@ -21,12 +23,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(policyName, builder =>
     {
-        builder.WithOrigins("https://localhost:7078") // the Angular app url
+        builder.WithOrigins("https://localhost:7099", "https://localhost:7098")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
     });
 });
+
 builder.Services.AddSignalR();
 
 builder.Services.AddControllers();
@@ -43,13 +46,8 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-
-
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    // Ваши другие настройки Identity...
-
-    // Настройки требований паролей
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
@@ -60,28 +58,27 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
 
+var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = key,
+    };
+});
+
 builder.Services.AddDistributedMemoryCache(); 
-
-builder.Services.AddSession();
-
-//builder.Services.AddAuthorization();
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//                .AddJwtBearer(options =>
-//                {
-//                    options.TokenValidationParameters = new TokenValidationParameters
-//                    {
-//                        ValidateIssuer = false,
-//                        ValidateAudience = false,
-//                        ValidateLifetime = true,
-//                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("/x3AoS1wFf7cuO9UHbCMijcMCk3oe46+1ozMPyZnkdw=")),
-//                        ValidateIssuerSigningKey = true,
-//                    };
-//                });
-
-
-
+//builder.Services.AddSession();
 builder.Services.AddScoped<UserManager<User>>();
-
 
 var app = builder.Build();
 
@@ -92,17 +89,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(policyName);
+
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
+
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapControllers();
 
-app.UseCors(policyName);
 app.MapHub<ChatHub>("/chat");
 app.Run();
-

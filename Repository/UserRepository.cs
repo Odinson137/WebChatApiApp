@@ -17,13 +17,13 @@ namespace WebChatApp.Repository
 
         public async Task<ICollection<UserDTO>> GetUsers()
         {
-            ICollection<UserDTO> users = await _context.Users.Select(x => new UserDTO()
+            var users = _context.Users.AsNoTracking().Select(x => new UserDTO()
             {
                 Id = x.Id,
                 UserName = x.UserName,
-            }).ToListAsync();
+            });
 
-            return users;
+            return await users.ToListAsync();
         }
 
         public async Task<bool> CheckUser(string userName)
